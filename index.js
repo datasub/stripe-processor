@@ -3,6 +3,7 @@
 var P = require('bluebird');
 function stripeProc( apiKey){
     this.stripe = require('stripe')(apiKey);
+    var self = this;
     
     this.voidTransaction = function(transId, strTransferId, callback){
 //        if(callback){
@@ -10,11 +11,11 @@ function stripeProc( apiKey){
 //        }
         var resolver = P.pending();
         if(strTransferId){
-            stripe.transfers.createReversal(strTransferId,{refund_application_fee: true}, function (err, revers){
+            self.stripe.transfers.createReversal(strTransferId,{refund_application_fee: true}, function (err, revers){
                 if(err){
                     return callback? callback(err, null) :  resolver.reject(err, revers);
                 }
-                this.stripe.refunds.create({charge: transId}, function(err, refund){
+                self.stripe.refunds.create({charge: transId}, function(err, refund){
                     if(err){
                        return callback? callback(err, null) :  resolver.reject(err, revers);
                     }
@@ -22,7 +23,7 @@ function stripeProc( apiKey){
                 });
             });
         }else{
-            this.stripe.refunds.create({charge: transId}, function(err, refund){
+            self.stripe.refunds.create({charge: transId}, function(err, refund){
                 if(err){
                     return resolver.reject(err);
                 }
@@ -37,13 +38,13 @@ function stripeProc( apiKey){
 //            return this.stripe.refunds.create({charge: transId}, fu
 //            callback);
 //        }
-       var resolver = P.pending();
+        var resolver = P.pending();
         if(strTransferId){
-            stripe.transfers.createReversal(strTransferId,{refund_application_fee: true}, function (err, revers){
+            self.stripe.transfers.createReversal(strTransferId,{refund_application_fee: true}, function (err, revers){
                 if(err){
                     return callback? callback(err, null) :  resolver.reject(err, revers);
                 }
-                this.stripe.refunds.create({charge: transId}, function(err, refund){
+                self.stripe.refunds.create({charge: transId}, function(err, refund){
                     if(err){
                        return callback? callback(err, null) :  resolver.reject(err, revers);
                     }
@@ -51,7 +52,7 @@ function stripeProc( apiKey){
                 });
             });
         }else{
-            this.stripe.refunds.create({charge: transId}, function(err, refund){
+            self.stripe.refunds.create({charge: transId}, function(err, refund){
                 if(err){
                     return resolver.reject(err);
                 }
@@ -62,10 +63,10 @@ function stripeProc( apiKey){
     };
     this.captureAuthTransaction = function(transId, callback){
         if(callback){
-            return this.stripe.capture.create({charge: transId},callback);
+            return self.stripe.capture.create({charge: transId},callback);
         }
         var resolver = P.pending();
-        this.stripe.charges.capture(transId, function(err, charge){
+        self.stripe.charges.capture(transId, function(err, charge){
             if(err){
                 return resolver.reject({message: err});
             }

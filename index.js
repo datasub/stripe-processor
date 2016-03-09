@@ -6,59 +6,47 @@ function stripeProc( apiKey){
     var self = this;
     
     this.voidTransaction = function(transId, strTransferId, callback){
-//        if(callback){
-//            return this.stripe.refunds.create({charge: transId}, callback);
-//        }
+
         var resolver = P.pending();
-        if(strTransferId){
-            self.stripe.transfers.createReversal(strTransferId,{refund_application_fee: true}, function (err, revers){
-                if(err){
-                    return callback? callback(err, null) :  resolver.reject(err, revers);
-                }
-                self.stripe.refunds.create({charge: transId}, function(err, refund){
+        
+        self.stripe.refunds.create({charge: transId}, function(err, refund){
+            if(err){
+                return callback? callback(err, refund) :  resolver.reject(err);
+            }
+            if(strTransferId){
+                self.stripe.transfers.createReversal(strTransferId,{refund_application_fee: true}, function (err, revers){
                     if(err){
-                       return callback? callback(err, null) :  resolver.reject(err, revers);
+                        return callback? callback(err, null) :  resolver.reject(err, revers);
                     }
-                    callback? callback(err, {responseCode:['1'], transactionStatus:['void'], response: refund}) : resolver.resolve({responseCode:['1'], transactionStatus:['void'], response: refund});
+                    callback? callback(err, refund) :  resolver.resolve({responseCode:['1'], transactionStatus:['void'], response: refund});
                 });
-            });
-        }else{
-            self.stripe.refunds.create({charge: transId}, function(err, refund){
-                if(err){
-                    return resolver.reject(err);
-                }
-                resolver.resolve({responseCode:['1'], transactionStatus:['void'], response: refund});
-            });
-        }
+            }else{
+                callback? callback(err, refund) :  resolver.resolve({responseCode:['1'], transactionStatus:['void'], response: refund});
+            }
+        });
+        
         return resolver.promise;
     };
     
     this.refundTransaction = function(transId, strTransferId, callback){
-//        if(callback){
-//            return this.stripe.refunds.create({charge: transId}, fu
-//            callback);
-//        }
+
         var resolver = P.pending();
-        if(strTransferId){
-            self.stripe.transfers.createReversal(strTransferId,{refund_application_fee: true}, function (err, revers){
-                if(err){
-                    return callback? callback(err, null) :  resolver.reject(err, revers);
-                }
-                self.stripe.refunds.create({charge: transId}, function(err, refund){
+        
+        self.stripe.refunds.create({charge: transId}, function(err, refund){
+            if(err){
+                return callback? callback(err, refund) :  resolver.reject(err, refund);
+            }
+            if(strTransferId){
+                self.stripe.transfers.createReversal(strTransferId,{refund_application_fee: true}, function (err, revers){
                     if(err){
-                       return callback? callback(err, null) :  resolver.reject(err, revers);
+                        return callback? callback(err, null) :  resolver.reject(err, revers);
                     }
-                    callback? callback(err, {responseCode:['1'], transactionStatus:['refund'], response: refund}) : resolver.resolve({responseCode:['1'], transactionStatus:['refund'], response: refund});
+                    callback? callback(err, refund) :  resolver.resolve({responseCode:['1'], transactionStatus:['refund'], response: refund});
                 });
-            });
-        }else{
-            self.stripe.refunds.create({charge: transId}, function(err, refund){
-                if(err){
-                    return resolver.reject(err);
-                }
-                resolver.resolve({responseCode:['1'], transactionStatus:['void'], response: refund});
-            });
-        }
+            }else{
+                callback? callback(err, refund) :  resolver.resolve({responseCode:['1'], transactionStatus:['refund'], response: refund});
+            }
+        });
         return resolver.promise;
     };
     this.captureAuthTransaction = function(transId, callback){
